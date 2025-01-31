@@ -13,52 +13,129 @@ router.post('/apply-job/:jobId', verifyToken, upload.single('resume'), async (re
     const jobId = req.params.jobId;
     const candidateId = req.user.id;
 
-    const { resume } = req.file; // Access the uploaded file
-    const { resumePath } = req.file.path; // Store the path or filename
+    // Check if user has already applied
+    const existingApplication = await Application.findOne({
+      candidate: candidateId,
+      job: jobId
+    });
 
-    
+    if (existingApplication) {
+      return res.status(400).json({ msg: 'You have already applied for this job' });
+    }
+
+    // Validate the file exists
+    if (!req.file) {
+      return res.status(400).json({ msg: 'Resume file is required' });
+    }
+
+    const resumePath = req.file.path;
+
+    // Find the job and validate it exists
     const job = await Job.findById(jobId);
-    if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (!job) {
+      return res.status(404).json({ msg: 'Job not found' });
+    }
 
-    
+    // Check if job is still accepting applications
+    if (job.status !== 'active') {
+      return res.status(400).json({ msg: 'This job is no longer accepting applications' });
+    }
+
+    // Create and save the application
     const application = new Application({
       candidate: candidateId,
       job: jobId,
-      resume: resumePath 
+      resume: resumePath,
+      status: 'pending', // Add initial status
+      appliedDate: new Date()
     });
 
     await application.save();
-    res.status(201).json({ msg: 'Application submitted', application });
+
+    // Populate job details in response
+    const populatedApplication = await Application.findById(application._id)
+      .populate('job', 'title companyName')
+      .populate('candidate', 'name email');
+
+    res.status(201).json({
+      msg: 'Application submitted successfully',
+      application: populatedApplication
+    });
   } catch (err) {
-    res.status(500).send(err.message);
+    console.error('Application submission error:', err);
+    res.status(500).json({ msg: 'Error submitting application', error: err.message });
   }
 });
 
-// view appilcations(for admin/employee)..
+// Get all applications for a candidate
+router.get('/my-applications', verifyToken, async (req, res) => {
+  try {
+    const applications = await Application.find({ candidate: req.user.id })
+      .populate('job', 'title companyName location salary')
+      .sort({ appliedDate: -1 }); // Sort by most recent first
 
+    res.json(applications);
+  } catch (err) {
+    console.error('Fetch applications error:', err);
+    res.status(500).json({ msg: 'Error fetching applications', error: err.message });
+  }
+});
+
+// View applications for a specific job (admin/employer only)
 router.get('/view-applications/:jobId', verifyToken, async (req, res) => {
   try {
     const jobId = req.params.jobId;
 
-    
+    // Find the job
     const job = await Job.findById(jobId);
-    if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (!job) {
+      return res.status(404).json({ msg: 'Job not found' });
+    }
 
-    
-//only admin/employee are allowed..
-
+    // Check user authorization
     const user = await User.findById(req.user.id);
     if (user.role !== 'admin' && job.employer.toString() !== user._id.toString()) {
       return res.status(403).json({ msg: 'Access denied' });
     }
 
-    
-    const applications = await Application.find({ job: jobId }).populate('candidate', 'name email'); 
+    // Get applications with populated candidate info
+    const applications = await Application.find({ job: jobId })
+      .populate('candidate', 'name email')
+      .populate('job', 'title companyName')
+      .sort({ appliedDate: -1 });
+
     res.json(applications);
-  } 
-  
-  catch (err) {
-    res.status(500).send(err.message);
+  } catch (err) {
+    console.error('View applications error:', err);
+    res.status(500).json({ msg: 'Error fetching applications', error: err.message });
+  }
+});
+
+// Update application status (admin/employer only)
+router.patch('/update-status/:applicationId', verifyToken, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const applicationId = req.params.applicationId;
+
+    const application = await Application.findById(applicationId).populate('job');
+    if (!application) {
+      return res.status(404).json({ msg: 'Application not found' });
+    }
+
+    // Check authorization
+    const user = await User.findById(req.user.id);
+    if (user.role !== 'admin' && application.job.employer.toString() !== user._id.toString()) {
+      return res.status(403).json({ msg: 'Access denied' });
+    }
+
+    // Update status
+    application.status = status;
+    await application.save();
+
+    res.json({ msg: 'Application status updated', application });
+  } catch (err) {
+    console.error('Update status error:', err);
+    res.status(500).json({ msg: 'Error updating application status', error: err.message });
   }
 });
 
