@@ -19,8 +19,8 @@ const jobSchema = new mongoose.Schema({
   },
   workExperience: {
     type: String,
-    enum: ['0-1 years', '1-3 years', '3-5 years', '5 years','more than 5 years', 'any'], 
-    default: 'any' 
+    enum: ['0-1 years', '1-3 years', '3-5 years', '5 years','more than 5 years', 'Any'], 
+    default: '0-1 years' 
   },
   dateOfPosting: { type: Date, default: Date.now }
 });
