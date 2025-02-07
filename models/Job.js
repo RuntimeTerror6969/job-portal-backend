@@ -9,6 +9,8 @@ const jobSchema = new mongoose.Schema({
   companyName: { type: String },  
   salary: { type: Number },  
   skillsRequired: [String],
+  applyLink: { type: String },  
+
 
   employmentType: {
     type: String,

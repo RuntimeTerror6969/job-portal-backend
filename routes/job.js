@@ -7,7 +7,7 @@ const { verifyToken, isEmployerOrAdmin } = require('../middleware/Auth');
 // Post new job (for employers and admins)
 router.post('/post-job', verifyToken, isEmployerOrAdmin, async (req, res) => {
   try {
-    const { title, description, location, category, companyName, salary, skillsRequired, employmentType, workExperience } = req.body;
+    const { title, description, location, category, companyName, salary, skillsRequired, employmentType, workExperience, applyLink } = req.body;
 
     const categoryExists = await Category.findById(category);
     if (!categoryExists) return res.status(400).json({ msg: 'Invalid category' });
@@ -23,6 +23,7 @@ router.post('/post-job', verifyToken, isEmployerOrAdmin, async (req, res) => {
       skillsRequired,
       employmentType,
       workExperience,
+      applyLink 
     });
 
     await newJob.save();
@@ -31,6 +32,7 @@ router.post('/post-job', verifyToken, isEmployerOrAdmin, async (req, res) => {
     res.status(500).send(err.message);
   }
 });
+
 
 // Retrieve all jobs with optional filters
 router.get('/view-jobs', async (req, res) => {
@@ -110,9 +112,9 @@ router.put('/update-job/:id', verifyToken, isEmployerOrAdmin, async (req, res) =
       return res.status(403).json({ msg: 'Access denied' });
     }
 
-    const { title, description, location, category, companyName, salary, skillsRequired, employmentType, workExperience } = req.body;
+    const { title, description, location, category, companyName, salary, skillsRequired, employmentType, workExperience, applyLink } = req.body;
 
-    //validate category..
+    // Validate category if updated
     if (category) {
       const categoryExists = await Category.findById(category);
       if (!categoryExists) return res.status(400).json({ msg: 'Invalid category' });
@@ -127,6 +129,7 @@ router.put('/update-job/:id', verifyToken, isEmployerOrAdmin, async (req, res) =
     job.skillsRequired = skillsRequired || job.skillsRequired;
     job.employmentType = employmentType || job.employmentType;
     job.workExperience = workExperience || job.workExperience;
+    job.applyLink = applyLink || job.applyLink; 
 
     await job.save();
     res.json(job);
@@ -134,7 +137,6 @@ router.put('/update-job/:id', verifyToken, isEmployerOrAdmin, async (req, res) =
     res.status(500).send(err.message);
   }
 });
-
 // Delete job (for employers and admins)
 router.delete('/delete-job/:id', verifyToken, isEmployerOrAdmin, async (req, res) => {
   try {
