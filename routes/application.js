@@ -178,11 +178,11 @@ router.post("/apply-job/:jobId", verifyToken, async (req, res) => {
     }
 
     // Check if job is still accepting applications
-    if (job.status !== "active") {
-      return res
-        .status(400)
-        .json({ msg: "This job is no longer accepting applications" });
-    }
+    // if (job.status !== "active") {
+    //   return res
+    //     .status(400)
+    //     .json({ msg: "This job is no longer accepting applications" });
+    // }
 
     // Create and save the application
     const application = new Application({
