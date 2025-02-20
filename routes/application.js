@@ -212,12 +212,21 @@ router.post("/apply-job/:jobId", verifyToken, async (req, res) => {
 });
 
 // Get all applications for a candidate
-router.get("/my-applications", verifyToken, async (req, res) => {
+
+outer.get("/my-applications", verifyToken, async (req, res) => {
   try {
     const applications = await Application.find({ candidate: req.user.id })
       .populate("job", "title companyName location salary")
       .sort({ appliedDate: -1 });
-    res.json(applications);
+    
+    // Transform dates to ISO string format before sending
+    const formattedApplications = applications.map(app => ({
+      ...app.toObject(),
+      appliedDate: app.appliedDate.toISOString(),
+      createdAt: app.createdAt.toISOString()
+    }));
+    
+    res.json(formattedApplications);
   } catch (err) {
     console.error("Fetch applications error:", err);
     res

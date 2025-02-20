@@ -7,13 +7,15 @@ const applicationSchema = new mongoose.Schema({
     required: true,
   },
   job: { type: mongoose.Schema.Types.ObjectId, ref: "Job", required: true },
-  resume: { type: String, required: true }, // now stores the Google Drive URL
+  resume: { type: String, required: true },
   status: {
     type: String,
     enum: ["pending", "reviewed", "accepted", "rejected"],
     default: "pending",
   },
   appliedDate: { type: Date, default: Date.now },
+}, {
+  timestamps: true // This adds createdAt and updatedAt fields automatically
 });
 
 module.exports = mongoose.model("Application", applicationSchema);
