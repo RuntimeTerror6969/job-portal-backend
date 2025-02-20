@@ -20,7 +20,7 @@ router.get('/view-profile', verifyToken, async (req, res) => {
 
 
 router.put('/update-profile', verifyToken, async (req, res) => {
-    const { name, email , phone } = req.body;
+    const { name, email , phone , skills } = req.body;
 
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -29,6 +29,7 @@ router.put('/update-profile', verifyToken, async (req, res) => {
         if (name) user.name = name;
         if (email) user.email = email;
         if (phone) user.phone = phone;
+        if (skills) user.skills = skills;
 
         await user.save();
         res.json(user);
