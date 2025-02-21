@@ -213,7 +213,7 @@ router.post("/apply-job/:jobId", verifyToken, async (req, res) => {
 
 // Get all applications for a candidate
 
-outer.get("/my-applications", verifyToken, async (req, res) => {
+router.get("/my-applications", verifyToken, async (req, res) => {
   try {
     const applications = await Application.find({ candidate: req.user.id })
       .populate("job", "title companyName location salary")
