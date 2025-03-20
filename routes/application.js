@@ -223,7 +223,7 @@ router.get("/my-applications", verifyToken, async (req, res) => {
     const formattedApplications = applications.map(app => ({
       ...app.toObject(),
       appliedDate: app.appliedDate.toISOString(),
-      createdAt: app.createdAt.toISOString()
+      createdAt: app.createdAt ? app.createdAt.toISOString() : null
     }));
     
     res.json(formattedApplications);
