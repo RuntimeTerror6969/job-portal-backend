@@ -45,6 +45,8 @@ router.get('/view-jobs', async (req, res) => {
       employmentType,
       workExperience,
       dateOfPosting,
+      page = 1,
+      limit = 5
     } = req.query;
 
     const query = {};
@@ -85,8 +87,27 @@ router.get('/view-jobs', async (req, res) => {
       }
     }
 
-    const jobs = await Job.find(query).populate('category').populate('employer'); 
-    res.json(jobs);
+    // Calculate skip value for pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Get total count of jobs matching the query
+    const totalJobs = await Job.countDocuments(query);
+    const totalPages = Math.ceil(totalJobs / parseInt(limit));
+
+    // Get paginated jobs
+    const jobs = await Job.find(query)
+      .populate('category')
+      .populate('employer')
+      .sort({ dateOfPosting: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    res.json({
+      jobs,
+      totalPages,
+      currentPage: parseInt(page),
+      totalJobs
+    });
   } catch (err) {
     res.status(500).send(err.message);
   }

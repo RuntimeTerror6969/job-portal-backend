@@ -9,12 +9,22 @@ const app = express();
 
 // CORS configuration for development
 const corsOptions = {
-  origin: "*", // Frontend URL
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
-  credentials: true, // Allow cookies or other credentials if needed
+  origin: [
+    "http://localhost:5173",    // Vite frontend
+    "http://127.0.0.1:5173",   // Vite frontend alternative
+    "http://localhost:5000",    // Backend
+    "http://127.0.0.1:5000",   // Backend alternative
+    "http://localhost:3000",    // Alternative backend port
+    "http://127.0.0.1:3000"    // Alternative backend port
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
+// Enable CORS for all routes
 app.use(cors(corsOptions));
 
 // This handles all OPTIONS requests (pre-flight requests)
