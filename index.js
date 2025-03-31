@@ -7,28 +7,16 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration for development
-const corsOptions = {
-  origin: [
-    "http://localhost:5173",    // Vite frontend
-    "http://127.0.0.1:5173",   // Vite frontend alternative
-    "http://localhost:5000",    // Backend
-    "http://127.0.0.1:5000",   // Backend alternative
-    "http://localhost:3000",    // Alternative backend port
-    "http://127.0.0.1:3000"    // Alternative backend port
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
-
-// Enable CORS for all routes
-app.use(cors(corsOptions));
+// CORS configuration to allow all domains
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // This handles all OPTIONS requests (pre-flight requests)
-app.options("*", cors(corsOptions));
+app.options('*', cors());
 
 app.use(express.json());
 
