@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
     phone: { type: String },
     skills: { type: [String], default: [] },
     company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' }, 
+    resetPasswordToken: String,
+    resetPasswordExpire: Date
 });
 
 module.exports  = mongoose.model('User', userSchema);
