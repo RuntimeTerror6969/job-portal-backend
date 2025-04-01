@@ -181,8 +181,9 @@ router.post('/forgot-password', async (req, res) => {
 
     await user.save();
 
-    // Create reset URL
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    // Create reset URL - ensure proper URL formatting
+    const baseUrl = process.env.FRONTEND_URL.replace(/\/$/, ''); // Remove trailing slash if present
+    const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
 
     // Email content
     const mailOptions = {
